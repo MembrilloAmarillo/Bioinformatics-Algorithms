@@ -69,7 +69,7 @@ Sequence::Sequence( LPCWSTR path_file, const char* suffix )
     { 
         DisplayError(TEXT("CreateFile"));
         printf("Terminal failure: unable to open file \"%ls\" for read.\n", path_file );
-        return; 
+        exit(1); 
     }
     sequence_set = (char*)VirtualAlloc( NULL, buffer_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE );
     
@@ -78,7 +78,9 @@ Sequence::Sequence( LPCWSTR path_file, const char* suffix )
     {
         DisplayError(TEXT("ReadFile"));
         printf("Terminal failure: Unable to read from file.\n GetLastError=%08x\n", GetLastError());
-        VirtualFree( sequence_set, buffer_size, MEM_RELEASE );
+        VirtualFree(sequence_set, buffer_size, MEM_RELEASE);
+		VirtualFree(sequence_suffix, suffix_size, MEM_RELEASE);
+		exit(1);
     }
     
 }
