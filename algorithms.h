@@ -25,7 +25,7 @@ GA( const char* S, const char* R, size_t SL, size_t RL );
 internal void 
 LA( const char* S, const char* R, size_t SL, size_t RL );
 
-internal void
+internal int
 ED_Backtrack(char* common, const char* S, const char* R, size_t SL, size_t RL);
 
 #endif //ALGORITHMS_H

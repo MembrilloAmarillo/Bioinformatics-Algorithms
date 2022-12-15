@@ -76,6 +76,8 @@ LCS( const char* S, const char* R, size_t SL, size_t RL )
 {
 	int *row = global_matrix;
 
+	global_matrix_struct.start = row;
+
 	for (size_t n = 0; n < SL; n++)
 	{
 		*row = 0;
@@ -107,6 +109,8 @@ LCS( const char* S, const char* R, size_t SL, size_t RL )
 
 		row += RL;
 	}
+
+	global_matrix_struct.end = row;
 }
 
 /* Edit Distance */
@@ -115,20 +119,22 @@ ED( const char* S, const char* R, size_t SL, size_t RL )
 {
 	int *row = global_matrix;
 
-	for (size_t n = 0; n < SL; n++)
+	global_matrix_struct.start = row;
+
+	for (size_t n = 0; n <= SL; n++)
 	{
 		*row = n;
-		row += RL;
+		row += RL + 1;
 	}
 
 	row = global_matrix;
 
-	for (size_t n = 0; n < RL; n++)
+	for (size_t n = 0; n <= RL; n++)
 	{
-		*(row + n) = n;
+		row[n] = n;
 	}
 
-	row = global_matrix + RL;
+	row = global_matrix + RL + 1;
 	for (size_t n = 1; n <= SL; n++)
 	{
 		for (size_t m = 1; m <= RL; m++) 
@@ -144,8 +150,10 @@ ED( const char* S, const char* R, size_t SL, size_t RL )
 			           );
 		}
 
-		row += RL;
+		row += RL + 1;
 	}
+
+	global_matrix_struct.end = row - 1;
 }
 
 /* Global Alignment */
@@ -164,43 +172,47 @@ LA( const char* S, const char* R, size_t SL, size_t RL )
     (void)R;
 }
 
-internal void
+internal int
 ED_Backtrack( char* common, const char* S, const char* R, size_t SL, size_t RL )
 {
 	// Start of last row
-	int *row = global_matrix + (SL * RL) - 1;
+	int *row = global_matrix_struct.end - RL;
 	int i = SL - 1;
 	int j = RL - 1;
+	int idx = 0;
 
-	while( j >= 1 )
+	while( i >= 0 && j >= 0 )
 	{
-		int *val     = row + j;
-		int *val_izq = (row + j - 1);
+		//int *val     = row + j;
+		int *val_izq = (row + j);
 		int *val_up  = (row + j - RL);
-		int *val_dia = (row - RL + j - 1);
+		int *val_dia = (row - RL + j);
 
-		if (S[i] != R[j])
+		if (S[j] != R[i])
 		{
-			if (val_izq < val_up)
+			if (val_izq <= val_up)
 			{
 				// Left
-				common[j] = '-';
+				printf("Row: %0.2d, Col: %0.2d\n, Val: Left\n", i, j );
+				common[idx] = '-';
 				j--;
 			}
 			else
 			{
 				if (val_dia <= val_up)
 				{
-					common[j] = '|';
+					printf("Row: %0.2d, Col: %0.2d\n, Val: Diagonal\n", i, j );
+					common[idx] = '\\';
 					// Go diagonal
-					common[j] = S[j];
 					row -= RL;
 					j--;
+					i--;
 				}
 				else
 				{
+					printf("Row: %0.2d, Col: %0.2d\n, Val: Up\n", i, j );
 					// Up
-					common[j] = '|';
+					common[idx] = '|';
 					row -= RL;
 					i--;
 				}
@@ -208,11 +220,14 @@ ED_Backtrack( char* common, const char* S, const char* R, size_t SL, size_t RL )
 		}
 		else
 		{
+			printf("Row: %0.2d, Col: %0.2d\n, Val: Diagonal e\n", i, j );
 			// Go diagonal
-			common[j] = S[j];
+			common[idx] = S[i];
 			row -= RL;
 			j--;
 			i--;
 		}
+		idx++;
 	}
+	return idx;
 }

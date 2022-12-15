@@ -7,7 +7,14 @@
 #define local    static
 #define global   static
 
-global int *global_matrix;
+global int  *global_matrix;
+
+struct matrix {
+	int* start;
+	int* end;
+};
+
+global struct matrix global_matrix_struct;
 
 #include "sequence.h"
 #include "algorithms.h"

@@ -1,1 +1,1 @@
-cl /nologo /W4 /Zi /MD task.cpp
+cl /nologo /W4 /Wall /Zi /MD task.cpp

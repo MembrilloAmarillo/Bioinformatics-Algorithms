@@ -38,14 +38,15 @@ main(void)
 	//assert_p( 2 == 2, "Unexpected result, wanted to find: %d\n", 1 );
     
 	Sequence Task1((LPCWSTR)path, SEQUENCE_A);
-    
-	char* common_substrings = (char *)VirtualAlloc(NULL, (size_t)2 << 20,
+
+	char* common_substrings = (char *)VirtualAlloc(NULL, (size_t)1 << 20,
 	                                               MEM_COMMIT | MEM_RESERVE,
 	                                               PAGE_READWRITE);
-
+	
+	
 	assert_p(common_substrings != NULL, "Allocation error in line %d", __LINE__);
     
-	char* sequence_substring = (char *)VirtualAlloc(NULL, (size_t)2 << 20,
+	char* sequence_substring = (char *)VirtualAlloc(NULL, (size_t)1 << 20,
 	                                                MEM_COMMIT | MEM_RESERVE,
 	                                                PAGE_READWRITE);
 
@@ -64,44 +65,50 @@ main(void)
 		size_t set_length = read_until(Task1.sequence_set + i,
 		                               sequence_substring, '\n');
         
-		LCS(sequence_substring, Task1.sequence_suffix, set_length, Task1.suffix_size);
+		//LCS(sequence_substring, Task1.sequence_suffix, set_length, Task1.suffix_size);
 		
 		ED(sequence_substring, Task1.sequence_suffix, set_length, Task1.suffix_size);
-		ED_Backtrack(common_substrings, sequence_substring, Task1.sequence_suffix, set_length, Task1.suffix_size);
+		int size = ED_Backtrack(common_substrings, sequence_substring, Task1.sequence_suffix, set_length, Task1.suffix_size);
 		
 #if 1
 		printf("Sequence from file  : %s\n", sequence_substring);
 		printf("Preffix subsequence : %s\n", Task1.sequence_suffix);
 		printf("ED Matrix: \n");
 		printf("====================================================================\n");
-		int *row = global_matrix;
+		int *row = global_matrix_struct.start;
+
 		for (size_t n = 0; n <= set_length; n++) 
 		{
 			for (size_t m = 0; m <= Task1.suffix_size; m++)
 			{
-				printf("%d,", *(row + m));
+				if (m == Task1.suffix_size)
+					printf("%0.2d", *(row + m));
+				else
+					printf("%0.2d,", *(row + m));
 			}
 			printf("\n");
-			row += Task1.suffix_size;
+			row += Task1.suffix_size+1;
 		}
 
 		printf("====================================================================\n");
 
-		printf("Common substring  : %s\n", common_substrings );
+		printf("Common substring  : %s\n", common_substrings);
+		printf("Size of common    : %d\n", size);
 		printf("====================================================================\n");
 
 		break;
 #endif
-		
+		/*
 		GA (sequence_substring, Task1.sequence_suffix, set_length, Task1.suffix_size);
 		LA (sequence_substring, Task1.sequence_suffix, set_length, Task1.suffix_size);
-        
+        */
 		i += set_length + 1;
 	}
     
 	VirtualFree(common_substrings,  2 << 20, MEM_RELEASE);
 	VirtualFree(sequence_substring, 2 << 20, MEM_RELEASE);
 	VirtualFree(sequence_substring, 1 << 30, MEM_RELEASE);
-    
+	VirtualFree(global_matrix,      1 << 30, MEM_RELEASE);
+
 	return 0;
 }
